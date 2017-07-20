@@ -97,8 +97,28 @@ router.post('/api/login', (req, res, next) => {
     authenticateFunction(req, res, next);
 });
 
+
 //POST logout
+router.post('/api/logout', (req, res, next) => {
+  //req.logout() is defined by passport
+  req.logout();
+  res.status(200).json({ message: 'Log out success' });
+});
+
+
+
 //GET checklogin
+router.get('/api/checklogin', (req, res, next) => {
+  if(!req.user){
+    res.status(401).json({ message: 'Nobody logged in 😩' });
+    return;
+  }
+  //Clear the encryptedPassword before sending
+  //(not from the database, just from the object)
+  req.user.encryptedPassword = undefined;
+
+  res.status(200).json (req.user);
+});
 
 
 

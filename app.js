@@ -6,8 +6,9 @@ const cookieParser = require('cookie-parser');
 const bodyParser   = require('body-parser');
 const layouts      = require('express-ejs-layouts');
 const mongoose     = require('mongoose');
-const session     = require('express-session');
+const session      = require('express-session');
 const passport     = require('passport');
+const cors         = require('cors');
 
 require('dotenv').config();
 
@@ -38,7 +39,10 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use(cors({
+  credentials: true,                  //allow other domains to send cookies
+  origin: [ 'http://localhost:4200' ] //these are the domains that are allowed
+}));
 
 //ROUTES---------------------------------------------------------
 const index = require('./routes/index');
@@ -46,6 +50,9 @@ app.use('/', index);
 
 const myAuthRoutes = require('./routes/auth-routes');
 app.use('/', myAuthRoutes);
+
+const myCamelRoutes = require('./routes/camel-routes');
+app.use('/', myCamelRoutes);
 //ROUTES---------------------------------------------------------
 
 
