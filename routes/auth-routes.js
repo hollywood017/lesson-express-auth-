@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 
 const UserModel = require('../models/user-model');
 
@@ -61,6 +62,41 @@ router.post('/api/signup', (req, res, next) => {
 
 
 //POST login
+//this is different beacuse passport.authenticate() redirects
+//(APIs normally shouldn't redirect)
+router.post('/api/login', (req, res, next) => {
+  const authenticateFunction =
+    passport.authenticate('local', (err, theUser, extraInfo) => {
+      //Errors prevented us from decided if login was successful/failure
+      if(err){
+        res.status(500).json({ message: 'Unkown login error' });
+        return;
+      }
+      //Login failed for sure if "theUser" is empty
+      if(!theUser){
+        //"extraInfo" contains feedback messages from LocalStrategy
+          res.status(401).json(extraInfo);
+          return;
+      }
+
+      //login successful save them in the session.
+      req.login(theUser, (err) => {
+        if(err){
+          res.status(500).json({ message: 'Session save error' });
+          return;
+        }
+
+        //clear the encryptedPassword before sending
+        //(not from the database, just from the object** that is being sent)
+        theUser.encryptedPassword = undefined;
+
+        //Everything worked! Send the user's information to the client.
+        res.status(201).json(theUser);
+      });
+    });
+    authenticateFunction(req, res, next);
+});
+
 //POST logout
 //GET checklogin
 
